@@ -2,6 +2,7 @@ package com.xingcloud.xa.meta;
 
 import com.xingcloud.meta.*;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.junit.Test;
@@ -34,6 +35,8 @@ public class TestDefaultDrillHiveMetaClient {
     HBaseFieldInfo.setColumnType(deu, event3Field, HBaseFieldInfo.FieldType.rowkey, null, null, HBaseFieldInfo.DataSerType.WORD, 0);
     FieldSchema event4Field = new FieldSchema("event4","string", "TEXT");
     HBaseFieldInfo.setColumnType(deu, event4Field, HBaseFieldInfo.FieldType.rowkey, null, null, HBaseFieldInfo.DataSerType.WORD, 0);
+    FieldSchema event5Field = new FieldSchema("event5","string", "TEXT");
+    HBaseFieldInfo.setColumnType(deu, event5Field, HBaseFieldInfo.FieldType.rowkey, null, null, HBaseFieldInfo.DataSerType.WORD, 0);
     FieldSchema uidSampleHashField = new FieldSchema("uhash", "tinyint", "BINARY:1");
     HBaseFieldInfo.setColumnType(deu, uidSampleHashField, HBaseFieldInfo.FieldType.rowkey, null, null, HBaseFieldInfo.DataSerType.BINARY, 1);
     FieldSchema uidField = new FieldSchema("uid", "int", "BINARY:4");
@@ -48,11 +51,12 @@ public class TestDefaultDrillHiveMetaClient {
     deu.getSd().addToCols(event2Field);
     deu.getSd().addToCols(event3Field);
     deu.getSd().addToCols(event4Field);
+    deu.getSd().addToCols(event5Field);
     deu.getSd().addToCols(uidSampleHashField);
     deu.getSd().addToCols(uidField);
     deu.getSd().addToCols(timestampField);
     
-    TableInfo.setPrimaryKeyPattern(deu, "${date}${event0}.${event1}.${event2}.${event3}.${event4}\\xFF${uhash}${uid}");    
+    TableInfo.setPrimaryKeyPattern(deu, "${date}${event0}.[${event1}.[${event2}.[${event3}.[${event4}.[${event5}]]]]]\\xFF${uhash}${uid}");    
     client.createTable(deu);
     
     Table user = TableInfo.newTable();

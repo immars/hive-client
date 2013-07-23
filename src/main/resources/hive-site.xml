@@ -3,7 +3,7 @@
 <configuration>
 	<property>
 		<name>hive.metastore.uris</name>
-		<value>thrift://localhost:3191</value>
+		<value>thrift://10.1.1.221:3191</value>
 	</property>
 
 	<property>

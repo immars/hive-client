@@ -20,66 +20,9 @@ public class TableInfo {
     if(pkString == null || "".equals(pkString)){
       return null;
     }
-    return parsePrimaryKeyPattern(table, pkString);
+    return PrimaryKeyPattern.parse(table, pkString);
   }
 
-  private static List<KeyPart> parsePrimaryKeyPattern(Table table,String pkString) {
-    int state = 0;//0 out of ${}; 1 inside ${}
-    List<FieldSchema> cols = table.getSd().getCols();    
-    List<KeyPart> ret = new ArrayList<KeyPart>();
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < pkString.length(); i++) {
-      char c = pkString.charAt(i);
-      switch (c){
-        case '$':
-          if(state == 0 && pkString.length()>i+1 && pkString.charAt(i+1)=='{'){
-            String constant = sb.toString();
-            if(!constant.isEmpty()){
-              ret.add(KeyPart.constantKeyPart(constant));
-            }
-            state = 1;
-            i++;//bypass {
-            sb = new StringBuilder();
-            continue;
-          }else{
-            sb.append(c);
-          }
-          break;
-        case '}':
-          if(state == 1){
-            String colName = sb.toString();
-            if(colName.isEmpty()){
-              throw new NullPointerException("empty column name!");
-            }
-            FieldSchema thisField = null;
-            for(FieldSchema fieldSchema:cols){
-              if(fieldSchema.getName().equals(colName)){
-                thisField = fieldSchema;
-                break;
-              }
-            }
-            if(thisField == null){
-              throw new NullPointerException("column:"+colName+" not found!");
-            }
-            ret.add(KeyPart.fieldKeyPart(thisField));
-            sb = new StringBuilder();
-            state=0;
-          }else{
-            sb.append(c);
-          }
-          break;
-        default:
-            sb.append(c);
-      }
-    }
-    if(sb.length()!=0){
-      if(state == 1){
-        throw new NullPointerException("col spec not finished:"+sb.toString());
-      }
-      ret.add(KeyPart.constantKeyPart(sb.toString()));
-    }
-    return ret;
-  }
 
   public static String getPrimaryKeyPattern(Table table) {
     return table.getSd().getSerdeInfo().getParameters() == null? null: table.getSd().getSerdeInfo().getParameters().get(PRIMARY_KEY);    

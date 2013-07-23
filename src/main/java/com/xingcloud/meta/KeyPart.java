@@ -4,24 +4,36 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.List;
 
 public class KeyPart {
   static enum Type{
-    field,
-    constant
+    field, //this part of rowkey corresponding to a field
+    constant, // this part of rowkey is a constant/separator between fields
+    optionalgroup // this part of rowkey may or may not exists
   }
   
   public Type type;
   
   private FieldSchema field;
-  private String constant;
-
+  private String constant;  
   private byte[] serializedConstant;
   
+  private List<KeyPart> optionalGroup;
+  
   public KeyPart(Type type, FieldSchema field, String constant) {
+    this(type, field, constant, null);
+  }
+
+  public KeyPart(Type type, FieldSchema field, String constant, List<KeyPart> optionalGroup) {
     this.type = type;
     this.field = field;
     this.constant = constant;
+    this.optionalGroup = optionalGroup;
+  }
+
+  public static KeyPart optionalGroupKeyPart(List<KeyPart> optionalGroup){
+    return new KeyPart(Type.optionalgroup, null, null, optionalGroup);
   }
 
   public static KeyPart fieldKeyPart(FieldSchema fieldSchema){
@@ -49,7 +61,6 @@ public class KeyPart {
   }
 
   public String getConstant() {
-    serializedConstant = null;
     return constant;
   }
   
@@ -58,6 +69,11 @@ public class KeyPart {
       serializedConstant = escape(constant);
     }
     return serializedConstant;
+  }
+
+
+  public List<KeyPart> getOptionalGroup() {
+    return optionalGroup;
   }
 
   /**
@@ -82,13 +98,8 @@ public class KeyPart {
     return baos.toByteArray();
   }
 
-  
-  private static short toInt(char c) {
-    
-    return 0;  //TODO method implementation
-  }
-
   public void setConstant(String constant) {
+    serializedConstant = null;
     this.constant = constant;
   }
 
@@ -97,8 +108,10 @@ public class KeyPart {
     switch (type){
       case constant:
         return "KeyPart{'"+constant+"'}";
-      default:
+      case field:
         return "KeyPart{`"+field+"`}";        
+      default:
+        return "KeyPart"+optionalGroup.toString();
     }
   }
   

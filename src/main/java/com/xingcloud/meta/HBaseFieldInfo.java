@@ -7,19 +7,16 @@ import java.util.StringTokenizer;
 
 public class HBaseFieldInfo extends FieldInfo {
   public static enum FieldType {
-    rowkey,
-    cellvalue,
-    cqname,
-    cversion
+    rowkey, // this field is part of rowkey.
+    cellvalue, // this field is value in a cell (in a column with a qualifier name within a column family)
+    cqname, // this field the qualifier name within a column family.
+    cversion // this field is the version number of a cell.
   }
 
   /**
    * data serialization type in hbase.
    * for example, int can be serialized as binary OR text.
    * 255 is serialized to '\xFF' as binary:1, to '\xFF\x00\x00\x00' as binary:4,
-   * uidhash :int,binary:1
-   * date :int,text:8
-   * 
    * to '255' as text, to '00000255' as text:8
    */
   public static enum DataSerType {
